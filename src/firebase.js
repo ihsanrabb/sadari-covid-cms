@@ -1,4 +1,9 @@
-import * as firebase from "firebase"
+import firebase from 'firebase/app';
+
+import 'firebase/database';
+import 'firebase/analytics';
+import 'firebase/storage';
+import 'firebase/firestore';
 
 var firebaseConfig = {
   apiKey: "AIzaSyCizEhc-xO0JZj89Jc7abhkn8_NyezWstg",
@@ -11,7 +16,7 @@ var firebaseConfig = {
   measurementId: "G-T8DLJBPKES"
 };
 // Initialize Firebase
-let fireDB = firebase.initializeApp(firebaseConfig);
-firebase.analytics();
 
-export default fireDB.database().ref()
+export const fb = firebase.initializeApp(firebaseConfig);
+export const db = firebase.firestore();
+firebase.analytics();
