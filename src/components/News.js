@@ -80,6 +80,7 @@ const News = () => {
     })
     setTimeout(() => {
       setSuccessAlert(false)
+      window.location.reload()
     }, 2000)
   }
 
