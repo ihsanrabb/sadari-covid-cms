@@ -37,7 +37,6 @@ const NewsForm = (props) => {
     imageURL: ""
   }
   const [values, setValues] = useState(initialFieldValue)
-  const [selectedFile, setSelectedFile] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -66,11 +65,10 @@ const NewsForm = (props) => {
   const handleFormSubmit = (e) => {
     e.preventDefault();
     props.addOrEdit(values)
-    setSelectedFile('')
     clearField()
   }
 
-  const clearField = (e) => {
+  const clearField = () => {
     setValues({
       title: "",
       description: "",
@@ -83,9 +81,8 @@ const NewsForm = (props) => {
   const onUpload = (event) => {
     let file = event.target.files[0];
     setLoading(true)
-    setSelectedFile(file.name)
 
-    let storageRef = fb.storage().ref('news/' + file.name + Date.now());
+    let storageRef = fb.storage().ref('news/' + Date.now() + file.name );
     let uploadTask = storageRef.put(file);
     uploadTask.on('state_changed', (snapshot) => {  
     }, (error) => {
@@ -100,7 +97,62 @@ const NewsForm = (props) => {
         })
       });
     });
+  }
 
+  const onDeleteImg = () => {
+    console.log('menghapus',values.imageURL)
+    let deleteImg = fb.storage().refFromURL(values.imageURL);
+
+    deleteImg.delete().then(function() {
+      console.log("image delete")
+      setValues({
+        ...values,
+        imageURL : ''
+      })
+    }).catch(function(error) {
+      console.log("error delete image")
+    })
+  }
+
+  function buttonImg() {
+    if(!values.imageURL) {
+      return (
+        <>
+          <input
+            accept="image/*"
+            className={classes.input}
+            id="contained-button-file"
+            multiple
+            type="file"
+            onChange={onUpload}
+          />
+          <label htmlFor="contained-button-file">
+            <Button 
+              variant="contained" 
+              color="primary" 
+              component="span" 
+              fullWidth={true}
+              startIcon={<CloudUploadIcon />}
+            >
+              Upload
+            </Button>
+          </label>
+        </>
+      )
+    } else {
+      return (
+        <Button 
+          variant="contained" 
+          color="secondary" 
+          component="span" 
+          fullWidth={true}
+          startIcon={<DeleteIcon />}
+          onClick={() => onDeleteImg()}
+        >
+          Delete Image
+        </Button>
+      )
+    }
   }
 
   return (
@@ -140,27 +192,7 @@ const NewsForm = (props) => {
               <LinearProgress /> 
               <LinearProgress color="secondary" />
             </>
-          : <>
-              <input
-                accept="image/*"
-                className={classes.input}
-                id="contained-button-file"
-                multiple
-                type="file"
-                onChange={onUpload}
-              />
-              <label htmlFor="contained-button-file">
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  component="span" 
-                  fullWidth={true}
-                  startIcon={<CloudUploadIcon />}
-                >
-                  Upload
-                </Button>
-              </label>
-            </>
+          : buttonImg()
         }
 
         {values.imageURL &&
@@ -171,8 +203,6 @@ const NewsForm = (props) => {
             alt="News"
           />
         }
-
-        <p>{selectedFile}</p>
 
         <Grid container spacing={1}>
           <Grid item xs={4}>
