@@ -8,6 +8,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import {fb} from '../firebase'
 import LinearProgress from '@material-ui/core/LinearProgress'
+import { useForm, Controller } from 'react-hook-form'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   button: {
-    margin: theme.spacing(1),
+    textTransform: 'none'
   },
   upload: {
     width: '100%'
@@ -30,52 +31,34 @@ const useStyles = makeStyles((theme) => ({
 
 const NewsForm = (props) => {
   const classes = useStyles();
-  const initialFieldValue = {
-    title: "",
-    description: "",
-    date: "",
-    imageURL: ""
-  }
-  const [values, setValues] = useState(initialFieldValue)
   const [loading, setLoading] = useState(false)
+  const [imgURL, setImgURL] = useState('')
+  const { handleSubmit, errors, reset, control } = useForm()
 
   useEffect(() => {
-    if(props.currentId === '') {
-      setValues({
-        title: "",
-        description: "",
-        date: "",
-        imageURL: ""
-      })
-    } else {
-      setValues({
-        ...props.newsObj
-      })
+    let data = {
+      title: props.newsObj.title,
+      date: props.newsObj.date,
+      description: props.newsObj.description,
     }
-  }, [props.currentId, props.newsObj])
+    reset(data)
+    setImgURL(props.newsObj.imageURL)
+  }, [props.newsObj, reset])
 
-  const handleInputChange = e => {
-    const {name, value} = e.target
-    setValues({
-      ...values,
-      [name] : value
-    })
-  }
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    props.addOrEdit(values)
-    clearField()
-  }
-
-  const clearField = () => {
-    setValues({
-      title: "",
-      description: "",
-      date: "",
-      imageURL: ""
-    })
-    props.onClearField()
+  const handleFormSubmit = (data, e) => {
+    if(imgURL) {
+      let dataObj = {
+        title: data.title,
+        date: data.date,
+        description: data.description,
+        imageURL: imgURL
+      }
+      props.addOrEdit(dataObj)
+      handleReset()
+    } else {
+      props.showAlert("Silahkan upload image terlebih dahulu", "error", false)
+    }
   }
 
   const onUpload = (event) => {
@@ -91,31 +74,31 @@ const NewsForm = (props) => {
       uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
         console.log('img', downloadURL)
         setLoading(false)
-        setValues({
-          ...values,
-          imageURL : downloadURL
-        })
+        setImgURL(downloadURL)
       });
     });
   }
 
   const onDeleteImg = () => {
-    console.log('menghapus',values.imageURL)
-    let deleteImg = fb.storage().refFromURL(values.imageURL);
+    let deleteImg = fb.storage().refFromURL(imgURL);
 
     deleteImg.delete().then(function() {
       console.log("image delete")
-      setValues({
-        ...values,
-        imageURL : ''
-      })
+      setImgURL('')
     }).catch(function(error) {
       console.log("error delete image")
     })
   }
 
+
+  const handleReset = () => {
+    reset({ title: "", value: "", index: ""});
+    setImgURL('')
+    props.onClearField()
+  };
+
   function buttonImg() {
-    if(!values.imageURL) {
+    if(!imgURL) {
       return (
         <>
           <input
@@ -158,32 +141,66 @@ const NewsForm = (props) => {
   return (
     <>
       <h1>Sadari Covid CMS</h1>
-      <form className={classes.root} noValidate autoComplete="off" onSubmit={handleFormSubmit}>
-        <TextField 
-          label="Title" 
-          variant="outlined"
-          value={values.title || ''}  
+      <form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit(handleFormSubmit)}>
+        <Controller 
           name="title"
-          onChange={handleInputChange}
+          as={({value, onChange}) => (
+            <TextField 
+              label="Title" 
+              variant="outlined"
+              name="title"
+              value={value}
+              onChange={e => {
+                onChange(e.target.value);
+              }}
+              error={errors.title ? true : false}
+              helperText={errors.title ? "title wajib diisi" : ""}
+            />
+          )}
+          onChange={data => data}
+          control={control}
+          defaultValue=""
         />
         <br/>
-        <TextField 
-          label="Tanggal" 
-          variant="outlined"
-          value={values.date || ''}  
+        <Controller 
           name="date"
-          onChange={handleInputChange}
+          as={({value, onChange}) => (
+            <TextField 
+              label="Tanggal" 
+              variant="outlined"
+              value={value}
+              onChange={e => {
+                onChange(e.target.value);
+              }}
+              error={errors.date ? true : false}
+              helperText={errors.date ? "Tanggal wajib diisi" : ""}
+            />
+          )}
+          onChange={data => data}
+          control={control}
+          defaultValue=""
         />
         <br />
-        <TextField
-          id="outlined-multiline-static"
-          label="Description"
-          multiline
-          rows={4}
-          variant="outlined"
-          value={values.description || ''}
+        <Controller 
           name="description"
-          onChange={handleInputChange}
+          as={({value, onChange}) => (
+            <TextField
+              id="outlined-multiline-static"
+              label="Description"
+              multiline
+              rows={4}
+              variant="outlined"
+              value={value}
+              onChange={e => {
+                onChange(e.target.value);
+              }}
+              error={errors.description ? true : false}
+              helperText={errors.date ? "Deskripsi wajib diisi" : ""}
+            />
+          )}
+          onChange={data => data}
+          control={control}
+          defaultValue=""
         />
         <br/>
 
@@ -195,11 +212,11 @@ const NewsForm = (props) => {
           : buttonImg()
         }
 
-        {values.imageURL &&
+        {imgURL &&
           <img
             width="100%"
             className={classes.media}
-            src={values.imageURL}
+            src={imgURL}
             alt="News"
           />
         }
@@ -211,9 +228,9 @@ const NewsForm = (props) => {
               color="secondary"
               className={classes.button}
               startIcon={<DeleteIcon />}
-              type="button"
+              type="reset"
               fullWidth={true}
-              onClick={() => clearField()}
+              onClick={handleReset}
             >
               Clear
             </Button>
