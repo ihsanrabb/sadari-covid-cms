@@ -6,7 +6,6 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
 import EditIcon from '@material-ui/icons/Edit';
 import Fab from '@material-ui/core/Fab';
 import Grid from '@material-ui/core/Grid';
@@ -17,6 +16,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import TablePagination from '@material-ui/core/TablePagination';
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -37,9 +37,6 @@ const StyledTableRow = withStyles((theme) => ({
 }))(TableRow);
 
 const useStyles = makeStyles({
-  // table: {
-  //   minWidth: 700,
-  // },
   tableContainer: {
     marginTop: '5rem'
   },
@@ -68,10 +65,24 @@ const NewsList = (props) => {
     props.onDelete(localId)
   }
 
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
   return (
     <>
-      <TableContainer component={Paper} className={classes.tableContainer}>
-        <Table className={classes.table} aria-label="customized table">
+    
+      <TableContainer className={classes.tableContainer}>
+        <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
               <StyledTableCell>Title</StyledTableCell>
@@ -80,9 +91,7 @@ const NewsList = (props) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            
-            
-            {props.newsList.map((news) => (
+            {props.newsList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((news) => (
               <StyledTableRow key={news.id}>
                 <StyledTableCell component="th" scope="row">
                   {news.data.title}
@@ -118,6 +127,15 @@ const NewsList = (props) => {
           </TableBody>
         </Table>
       </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[10]}
+        component="div"
+        count={props.newsList.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onChangePage={handleChangePage}
+        onChangeRowsPerPage={handleChangeRowsPerPage}
+      />
 
       <Dialog
         open={open}
@@ -140,6 +158,7 @@ const NewsList = (props) => {
           </Button>
         </DialogActions>
       </Dialog>
+
     </>
   )
 }
