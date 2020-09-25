@@ -17,14 +17,17 @@ const News = () => {
   })
 
   useEffect(() => {
-    db.collection("news").get().then(function(querySnapshot) {
-      querySnapshot.forEach(function(doc) {
-          setNewsList(prevList => [...prevList, {
-            id:doc.id,
-            data:doc.data()
-          }])
+    
+      db.collection("news").get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+            setNewsList(prevList => [...prevList, {
+              id:doc.id,
+              data:doc.data()
+            }])
+        });
       });
-    });
+    
+    
   }, [])
 
   const addOrEdit = (obj) => {
@@ -72,7 +75,7 @@ const News = () => {
     setCurrentId('')
   }
 
-  function showAlert(wording, color) {
+  function showAlert(wording, color, reload=true) {
     setSuccessAlert(true)
     setAlertContent({
       wording: wording,  
@@ -80,7 +83,9 @@ const News = () => {
     })
     setTimeout(() => {
       setSuccessAlert(false)
-      window.location.reload()
+      if(reload) {
+        window.location.reload()
+      }
     }, 2000)
   }
 
@@ -97,7 +102,7 @@ const News = () => {
       </Grid>
       
       <Grid item xs={12} md={5}>
-          <NewsForm {...({addOrEdit, newsObj, currentId, onClearField})} />
+          <NewsForm {...({addOrEdit, newsObj, currentId, onClearField, showAlert})} />
         </Grid>
         <Grid item xs={12} md={7}>
           <NewsList {...({newsObj, onEdit, onDelete, newsList})} />
