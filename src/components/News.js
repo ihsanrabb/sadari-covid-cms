@@ -17,17 +17,21 @@ const News = () => {
   })
 
   useEffect(() => {
-    
-      db.collection("news").get().then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-            setNewsList(prevList => [...prevList, {
-              id:doc.id,
-              data:doc.data()
-            }])
-        });
+    db.collection("news").get().then(function(querySnapshot) {
+      querySnapshot.forEach(function(doc) {
+          let data = {
+            title: doc.data().title,
+            date: doc.data().date.toDate(),
+            description: doc.data().description,
+            imageURL: doc.data().imageURL
+          }
+          setNewsList(prevList => [...prevList, {
+            id:doc.id,
+            data:data
+            
+          }])
       });
-    
-    
+    });
   }, [])
 
   const addOrEdit = (obj) => {
