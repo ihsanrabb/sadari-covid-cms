@@ -168,7 +168,7 @@ const NewsForm = (props) => {
             label="Received Date"
             defaultValue={new Date()}
             inputVariant="outlined"
-            format="dd/MM/yyyy"
+            ampm={false}
             error={errors.date ? true : false}
             helperText={errors.date ? "Tanggal dan Waktu wajib diisi" : ""}
           />
