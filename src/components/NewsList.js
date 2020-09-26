@@ -97,7 +97,7 @@ const NewsList = (props) => {
                   {news.data.title}
                 </StyledTableCell>
                 <StyledTableCell>
-                  {news.data.date}
+                  {news.data.date.toLocaleString('id-ID')}
                 </StyledTableCell>
                 <StyledTableCell>
                   <Grid container direction="row" justify="flex-start" alignItems="center">
