@@ -9,6 +9,8 @@ import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import {fb} from '../firebase'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import { useForm, Controller } from 'react-hook-form'
+import DateFnsUtils from '@date-io/date-fns';
+import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -33,7 +35,10 @@ const NewsForm = (props) => {
   const classes = useStyles();
   const [loading, setLoading] = useState(false)
   const [imgURL, setImgURL] = useState('')
-  const { handleSubmit, errors, reset, control } = useForm()
+  const { handleSubmit, errors, reset, control } = useForm({
+    shouldFocusError: false,
+    reValidateMode: 'onBlur',
+  })
 
   useEffect(() => {
     let data = {
@@ -72,7 +77,6 @@ const NewsForm = (props) => {
       console.error(error)
     },() => {
       uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-        console.log('img', downloadURL)
         setLoading(false)
         setImgURL(downloadURL)
       });
@@ -144,62 +148,44 @@ const NewsForm = (props) => {
       <form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit(handleFormSubmit)}>
         <Controller 
           name="title"
-          as={({value, onChange}) => (
-            <TextField 
-              label="Title" 
-              variant="outlined"
-              name="title"
-              value={value}
-              onChange={e => {
-                onChange(e.target.value);
-              }}
-              error={errors.title ? true : false}
-              helperText={errors.title ? "title wajib diisi" : ""}
-            />
-          )}
-          onChange={data => data}
+          as={<TextField />}
+          label="Judul"
           control={control}
+          variant="outlined"
           defaultValue=""
+          rules={{ required: true }}
+          error={errors.title ? true : false}
+          helperText={errors.title ? "Title wajib diisi" : ""}
         />
         <br/>
-        <Controller 
-          name="date"
-          as={({value, onChange}) => (
-            <TextField 
-              label="Tanggal" 
-              variant="outlined"
-              value={value}
-              onChange={e => {
-                onChange(e.target.value);
-              }}
-              error={errors.date ? true : false}
-              helperText={errors.date ? "Tanggal wajib diisi" : ""}
-            />
-          )}
-          onChange={data => data}
-          control={control}
-          defaultValue=""
-        />
+
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <Controller 
+            name="date"
+            as={<DateTimePicker />}
+            control={control}
+            rules={{ required: true }}
+            label="Received Date"
+            defaultValue={new Date()}
+            inputVariant="outlined"
+            format="dd/MM/yyyy"
+            error={errors.date ? true : false}
+            helperText={errors.date ? "Tanggal dan Waktu wajib diisi" : ""}
+          />
+        </MuiPickersUtilsProvider>
         <br />
+
         <Controller 
           name="description"
-          as={({value, onChange}) => (
-            <TextField
-              id="outlined-multiline-static"
-              label="Description"
-              multiline
-              rows={4}
-              variant="outlined"
-              value={value}
-              onChange={e => {
-                onChange(e.target.value);
-              }}
-              error={errors.description ? true : false}
-              helperText={errors.date ? "Deskripsi wajib diisi" : ""}
-            />
-          )}
-          onChange={data => data}
+          as={<TextField />}
+          label="Description"
+          multiline
+          rows={5}
+          variant="outlined"
           control={control}
+          error={errors.description ? true : false}
+          helperText={errors.description ? "Deskripsi wajib diisi" : ""}
+          rules={{ required: true }}
           defaultValue=""
         />
         <br/>
