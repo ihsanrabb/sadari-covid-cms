@@ -17,7 +17,7 @@ const News = () => {
   })
 
   useEffect(() => {
-    db.collection("news").get().then(function(querySnapshot) {
+    db.collection("news").orderBy("date", "desc").get().then(function(querySnapshot) {
       querySnapshot.forEach(function(doc) {
           let data = {
             title: doc.data().title,
