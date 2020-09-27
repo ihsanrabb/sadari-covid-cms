@@ -11,6 +11,7 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import { useForm, Controller } from 'react-hook-form'
 import DateFnsUtils from '@date-io/date-fns';
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import { Editor } from '@tinymce/tinymce-react';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -44,6 +45,7 @@ const NewsForm = (props) => {
     let data = {
       title: props.newsObj.title,
       date: props.newsObj.date,
+      sub_description: props.newsObj.sub_description,
       description: props.newsObj.description,
     }
     reset(data)
@@ -52,10 +54,12 @@ const NewsForm = (props) => {
 
 
   const handleFormSubmit = (data, e) => {
+    console.log('tambah', data)
     if(imgURL) {
       let dataObj = {
         title: data.title,
         date: data.date,
+        sub_description: data.sub_description,
         description: data.description,
         imageURL: imgURL
       }
@@ -93,7 +97,6 @@ const NewsForm = (props) => {
       console.log("error delete image")
     })
   }
-
 
   const handleReset = () => {
     reset({ title: "", value: "", index: ""});
@@ -165,7 +168,7 @@ const NewsForm = (props) => {
             as={<DateTimePicker />}
             control={control}
             rules={{ required: true }}
-            label="Received Date"
+            label="Tanggal"
             defaultValue={new Date()}
             inputVariant="outlined"
             ampm={false}
@@ -176,19 +179,43 @@ const NewsForm = (props) => {
         <br />
 
         <Controller 
-          name="description"
+          name="sub_description"
           as={<TextField />}
-          label="Description"
+          label="Sub Description"
           multiline
-          rows={5}
+          rows={2}
           variant="outlined"
           control={control}
-          error={errors.description ? true : false}
-          helperText={errors.description ? "Deskripsi wajib diisi" : ""}
+          error={errors.sub_description ? true : false}
+          helperText={errors.sub_description ? "Sub Deskripsi wajib diisi" : ""}
           rules={{ required: true }}
           defaultValue=""
         />
         <br/>
+
+        <Controller 
+          name="description"
+          control={control}
+          render={props => (
+            <Editor 
+              apiKey="cbe2lrk2sk58c61ttjie7d9slv3ydd8cpaq7gn2wyori4zuj"
+              value={props.value || '<p>Description</p>'}
+              init={{
+                height: 500,
+                menubar: false,
+                plugins: [
+                  'advlist autolink lists link image charmap print preview anchor',
+                  'searchreplace visualblocks code fullscreen',
+                  'insertdatetime media table paste code help wordcount'
+                ],
+                toolbar:
+                  'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help'
+              }}
+              onEditorChange={props.onChange}
+            />
+          )}
+          defaultValue=""
+        />
 
         {loading 
           ? <>
